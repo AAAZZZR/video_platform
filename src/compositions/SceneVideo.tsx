@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Audio,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
@@ -56,9 +57,10 @@ function useSceneOpacity(durationInFrames: number): number {
 const SceneContainer: React.FC<{
   background: string;
   durationInFrames: number;
+  audioUrl?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
-}> = ({ background, durationInFrames, children, style }) => {
+}> = ({ background, durationInFrames, audioUrl, children, style }) => {
   const opacity = useSceneOpacity(durationInFrames);
   return (
     <AbsoluteFill
@@ -70,6 +72,7 @@ const SceneContainer: React.FC<{
         ...style,
       }}
     >
+      {audioUrl && <Audio src={audioUrl} volume={1} />}
       <div style={{ opacity, width: "100%", height: "100%" }}>{children}</div>
     </AbsoluteFill>
   );
@@ -108,6 +111,7 @@ const TitleSlide: React.FC<{ scene: TitleScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
       style={{ justifyContent: "center", alignItems: "center" }}
     >
       <div
@@ -190,6 +194,7 @@ const TextSlide: React.FC<{ scene: TextScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -259,6 +264,7 @@ const BulletsSlide: React.FC<{ scene: BulletsScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -356,6 +362,7 @@ const TableSlide: React.FC<{ scene: TableScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -479,6 +486,7 @@ const ChartBarSlide: React.FC<{ scene: ChartBarScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -612,6 +620,7 @@ const StatsSlide: React.FC<{ scene: StatsScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -809,6 +818,7 @@ const ComparisonSlide: React.FC<{ scene: ComparisonScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{
@@ -896,6 +906,7 @@ const QuoteSlide: React.FC<{ scene: QuoteScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
       style={{ justifyContent: "center", alignItems: "center" }}
     >
       <div
@@ -1008,6 +1019,7 @@ const CodeSlide: React.FC<{ scene: CodeScene }> = ({ scene }) => {
     <SceneContainer
       background={scene.background}
       durationInFrames={scene.durationInFrames}
+      audioUrl={scene.audioUrl}
     >
       <div
         style={{

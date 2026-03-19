@@ -30,47 +30,47 @@ You have 9 scene types to work with. Each scene object must include "type", "bac
 
 ### 1. title
 Opening/section title card.
-Fields: type, title (string), subtitle (string), background, durationInFrames
+Fields: type, title (string), subtitle (string), narration (string), background, durationInFrames
 durationInFrames: 120 (4 seconds at 30fps)
 
 ### 2. text
 A single block of explanatory text.
-Fields: type, title (string), body (string), background, durationInFrames
+Fields: type, title (string), body (string), narration (string), background, durationInFrames
 durationInFrames: 150 (5 seconds)
 
 ### 3. bullets
 A list of bullet points.
-Fields: type, title (string), items (string[], 3-5 items max), background, durationInFrames
+Fields: type, title (string), items (string[], 3-5 items max), narration (string), background, durationInFrames
 durationInFrames: 150-180 (scale with item count: 3 items=150, 4 items=165, 5 items=180)
 
 ### 4. table
 Tabular data display.
-Fields: type, title (string), headers (string[], 2-4 columns), rows (string[][], 3-5 rows max), background, durationInFrames
+Fields: type, title (string), headers (string[], 2-4 columns), rows (string[][], 3-5 rows max), narration (string), background, durationInFrames
 durationInFrames: 180 (6 seconds)
 
 ### 5. chart-bar
 A bar chart visualization.
-Fields: type, title (string), items (array of {label: string, value: number}, 4-6 items), unit (string, optional, e.g. "%", "M", "$"), maxValue (number, optional), background, durationInFrames
+Fields: type, title (string), items (array of {label: string, value: number}, 4-6 items), unit (string, optional, e.g. "%", "M", "$"), maxValue (number, optional), narration (string), background, durationInFrames
 durationInFrames: 180 (6 seconds)
 
 ### 6. stats
 Key statistics or metrics display.
-Fields: type, title (string), items (array of {value: string, label: string}, 2-4 items), background, durationInFrames
+Fields: type, title (string), items (array of {value: string, label: string}, 2-4 items), narration (string), background, durationInFrames
 durationInFrames: 150 (5 seconds)
 
 ### 7. comparison
 Side-by-side comparison.
-Fields: type, title (string), leftTitle (string), rightTitle (string), leftItems (string[], 3-5 items), rightItems (string[], 3-5 items, same count as leftItems), background, durationInFrames
+Fields: type, title (string), leftTitle (string), rightTitle (string), leftItems (string[], 3-5 items), rightItems (string[], 3-5 items, same count as leftItems), narration (string), background, durationInFrames
 durationInFrames: 180 (6 seconds)
 
 ### 8. quote
 A quotation with attribution.
-Fields: type, title (string), quote (string), author (string), background, durationInFrames
+Fields: type, title (string), quote (string), author (string), narration (string), background, durationInFrames
 durationInFrames: 120 (4 seconds)
 
 ### 9. code
 A code snippet.
-Fields: type, title (string), code (string, 5-15 lines), language (string, e.g. "typescript", "python"), background, durationInFrames
+Fields: type, title (string), code (string, 5-15 lines), language (string, e.g. "typescript", "python"), narration (string), background, durationInFrames
 durationInFrames: 180 (6 seconds)
 
 ## Background Options
@@ -92,6 +92,7 @@ ${BACKGROUNDS.map((bg, i) => `${i + 1}. "${bg}"`).join("\n")}
 10. For quotes: use real, well-known quotes when relevant, or craft insightful original ones.
 11. The video rendering is at 30 FPS, so 30 frames = 1 second.
 12. Make the content educational, engaging, and well-structured — as if it were a professional explainer video.
+13. Every scene MUST include a 'narration' field with natural spoken text for voiceover. The narration should describe or complement what's shown visually. Keep narration concise: aim for about 2-3 words per second of scene duration. For a 5-second scene (150 frames), write about 10-15 words of narration.
 
 ## Language
 
@@ -136,7 +137,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { topic?: string; sceneCount?: number; language?: string };
+  let body: { topic?: string; sceneCount?: number; language?: string; model?: string };
 
   try {
     body = await request.json();
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { topic, sceneCount, language } = body;
+  const { topic, sceneCount, language, model } = body;
 
   if (!topic || typeof topic !== "string" || topic.trim().length === 0) {
     return NextResponse.json(
@@ -165,11 +166,12 @@ export async function POST(request: Request) {
     userMessage += `\n\nGenerate all content in ${language}.`;
   }
 
+  const modelId = model && typeof model === "string" ? model : "claude-sonnet-4-20250514";
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {
     const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: modelId,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMessage }],

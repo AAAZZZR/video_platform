@@ -25,6 +25,8 @@ type BaseScene = {
   title: string;
   background: string;
   durationInFrames: number;
+  narration?: string; // Text for TTS voiceover
+  audioUrl?: string; // URL of generated TTS audio
 };
 
 /** Hero title card — big title + subtitle */
@@ -130,3 +132,43 @@ export const BACKGROUND_PRESETS = [
   "linear-gradient(135deg, #232526 0%, #414345 100%)",
   "linear-gradient(135deg, #1d4350 0%, #a43931 100%)",
 ] as const;
+
+// ---- Voice Presets (Edge TTS) ----
+
+export type VoicePreset = {
+  id: string;
+  name: string;
+  language: string;
+  gender: "male" | "female";
+};
+
+export const VOICE_PRESETS: VoicePreset[] = [
+  // English (US)
+  { id: "en-US-GuyNeural", name: "Guy (American Male)", language: "en", gender: "male" },
+  { id: "en-US-JennyNeural", name: "Jenny (American Female)", language: "en", gender: "female" },
+  { id: "en-US-AriaNeural", name: "Aria (American Female)", language: "en", gender: "female" },
+  // English (UK)
+  { id: "en-GB-SoniaNeural", name: "Sonia (British Female)", language: "en", gender: "female" },
+  { id: "en-GB-RyanNeural", name: "Ryan (British Male)", language: "en", gender: "male" },
+  // Chinese (Simplified)
+  { id: "zh-CN-XiaoxiaoNeural", name: "曉曉 (中文女聲)", language: "zh-CN", gender: "female" },
+  { id: "zh-CN-YunxiNeural", name: "雲希 (中文男聲)", language: "zh-CN", gender: "male" },
+  { id: "zh-CN-YunyangNeural", name: "雲揚 (中文男聲)", language: "zh-CN", gender: "male" },
+  // Chinese (Traditional)
+  { id: "zh-TW-HsiaoChenNeural", name: "曉臻 (繁中女聲)", language: "zh-TW", gender: "female" },
+  { id: "zh-TW-YunJheNeural", name: "雲哲 (繁中男聲)", language: "zh-TW", gender: "male" },
+];
+
+// ---- AI Model Options ----
+
+export type ModelOption = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const MODEL_OPTIONS: ModelOption[] = [
+  { id: "claude-haiku-4-5-20251001", name: "Haiku 4.5", description: "Fastest" },
+  { id: "claude-sonnet-4-20250514", name: "Sonnet 4", description: "Balanced" },
+  { id: "claude-opus-4-20250514", name: "Opus 4", description: "Best quality" },
+];

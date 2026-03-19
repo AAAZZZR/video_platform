@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import {
   BACKGROUND_PRESETS,
   FPS,
+  VOICE_PRESETS,
+  MODEL_OPTIONS,
   type SceneData,
   type SceneType,
 } from "@/src/types";
@@ -67,6 +69,9 @@ export default function Home() {
   const [scenes, setScenes] = useState<SceneData[]>([]);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState("zh-TW-HsiaoChenNeural");
+  const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-20250514");
+  const [generatingAudio, setGeneratingAudio] = useState(false);
   const [expandedScene, setExpandedScene] = useState<number | null>(null);
 
   const [renderState, setRenderState] = useState<RenderState>("idle");
@@ -85,7 +90,7 @@ export default function Home() {
       const res = await fetch("/api/generate-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, model: selectedModel }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -99,6 +104,25 @@ export default function Home() {
       setGenerateError(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
+    }
+  };
+
+  // ---- Generate Audio ----
+  const generateAudio = async () => {
+    setGeneratingAudio(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenes, voiceId: selectedVoice }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "TTS failed");
+      if (data.scenes) setScenes(data.scenes);
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : "Audio generation failed");
+    } finally {
+      setGeneratingAudio(false);
     }
   };
 
@@ -615,28 +639,96 @@ export default function Home() {
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
               />
             </div>
+            <div>
+              <label className="block text-xs text-zinc-500 mb-2">AI Model</label>
+              <div className="flex gap-2">
+                {MODEL_OPTIONS.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setSelectedModel(m.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border ${
+                      selectedModel === m.id
+                        ? "bg-blue-600/20 border-blue-500/50 text-blue-300"
+                        : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600"
+                    }`}
+                  >
+                    {m.name}
+                    <span className="ml-1.5 text-xs opacity-60">{m.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-zinc-500 mb-2">Voice</label>
+              <select
+                value={selectedVoice}
+                onChange={(e) => setSelectedVoice(e.target.value)}
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+              >
+                <optgroup label="English">
+                  {VOICE_PRESETS.filter((v) => v.language === "en").map((v) => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="中文 (简体)">
+                  {VOICE_PRESETS.filter((v) => v.language === "zh-CN").map((v) => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="中文 (繁體)">
+                  {VOICE_PRESETS.filter((v) => v.language === "zh-TW").map((v) => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
             {generateError && (
               <div className="bg-red-950/50 border border-red-900 rounded-lg p-3">
                 <p className="text-red-400 text-sm">{generateError}</p>
               </div>
             )}
-            <button
-              onClick={generateScript}
-              disabled={generating || !topic.trim()}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
-            >
-              {generating ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Generating script...
-                </>
-              ) : (
-                <>Generate Script</>
-              )}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={generateScript}
+                disabled={generating || !topic.trim()}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+              >
+                {generating ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating script...
+                  </>
+                ) : (
+                  <>Generate Script</>
+                )}
+              </button>
+              <button
+                onClick={generateAudio}
+                disabled={generatingAudio || scenes.length === 0}
+                className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+              >
+                {generatingAudio ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating audio...
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                      <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.08" />
+                    </svg>
+                    Generate Audio
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -707,6 +799,14 @@ export default function Home() {
                       <span className="text-xs text-zinc-600 shrink-0">
                         {(scene.durationInFrames / FPS).toFixed(1)}s
                       </span>
+                      {scene.audioUrl && (
+                        <span className="text-xs text-green-500 shrink-0" title="Audio generated">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                            <path d="M15.54 8.46a5 5 0 010 7.08" />
+                          </svg>
+                        </span>
+                      )}
                       <button
                         onClick={(e) => { e.stopPropagation(); removeScene(index); }}
                         className="text-zinc-700 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
