@@ -162,12 +162,12 @@ export async function POST(request: Request) {
 
   let systemPrompt = SYSTEM_PROMPT;
   if (language) {
-    systemPrompt += `\n\n## Language\nGenerate all text content (titles, labels, descriptions, narration) in ${language}. Keep code syntax, variable names, and imports in English.`;
+    systemPrompt += `\n\n## Language (CRITICAL)\nThe target language is ${language}. ALL visible text content (titles, labels, descriptions) and the NARRATION comment MUST be in ${language}, regardless of what language the user's input is in. Translate/adapt if needed. Keep code syntax, variable names, and imports in English.`;
   }
 
   let userMessage = `Create an animated Remotion video component about: ${topic.trim()}`;
   if (language) {
-    userMessage += `\n\nAll visible text content must be in ${language}.`;
+    userMessage += `\n\nIMPORTANT: All visible text and narration MUST be in ${language}. Translate the topic if it's in a different language.`;
   }
 
   const modelId =

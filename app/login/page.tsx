@@ -13,11 +13,16 @@ export default function LoginPage() {
 
   const supabase = createClient();
 
+  const getRedirectUrl = () => {
+    const base = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    return `${base}/auth/callback`;
+  };
+
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: getRedirectUrl(),
       },
     });
     if (error) setError(error.message);
@@ -34,7 +39,7 @@ export default function LoginPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getRedirectUrl(),
         },
       });
       if (error) {

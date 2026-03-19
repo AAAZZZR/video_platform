@@ -96,9 +96,11 @@ ${BACKGROUNDS.map((bg, i) => `${i + 1}. "${bg}"`).join("\n")}
 12. Make the content educational, engaging, and well-structured — as if it were a professional explainer video.
 13. Every scene MUST include a 'narration' field with natural spoken text for voiceover. The narration should describe or complement what's shown visually. Keep narration concise: aim for about 2-3 words per second of scene duration. For a 5-second scene (150 frames), write about 10-15 words of narration.
 
-## Language
+## Language (CRITICAL)
 
-If the user specifies a language, generate ALL text content (titles, body text, bullets, table data, stats labels, etc.) in that language. The JSON keys must remain in English.`;
+The user will specify a target language. You MUST generate ALL visible text and narration in that language, regardless of what language the user's topic/input is written in. This includes: titles, subtitles, body text, bullet items, table headers, table cells, chart labels, stat values/labels, comparison items, quotes, and narration. The only things that stay in English are JSON keys and code snippets.
+
+For example, if the user writes the topic in Chinese but the target language is English, translate and adapt all content to English. If the topic is in English but the target language is Traditional Chinese, write everything in Traditional Chinese.`;
 
 function extractJSON(text: string): unknown {
   // First, try parsing the entire response as JSON
@@ -177,7 +179,7 @@ export async function POST(request: Request) {
 
   let userMessage = `Create a ${count}-scene video script about: ${topic.trim()}`;
   if (language) {
-    userMessage += `\n\nGenerate all content in ${language}.`;
+    userMessage += `\n\nIMPORTANT: The target language is ${language}. ALL text content (titles, body, bullets, table data, stats, narration, quotes — everything the viewer sees or hears) MUST be in ${language}. Translate/adapt the topic if it is in a different language.`;
   }
 
   const modelId = model && typeof model === "string" ? model : "claude-sonnet-4-20250514";

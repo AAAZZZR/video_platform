@@ -138,6 +138,14 @@ function VoiceSelector({ value, onChange }: { value: string; onChange: (v: strin
   );
 }
 
+// ---- Helpers ----
+
+function getLanguageFromVoice(voiceId: string): string {
+  if (voiceId.startsWith("zh-TW")) return "Traditional Chinese (繁體中文)";
+  if (voiceId.startsWith("zh-CN")) return "Simplified Chinese (简体中文)";
+  return "English";
+}
+
 // ---- Types ----
 
 type RenderState = "idle" | "rendering" | "done" | "error";
@@ -192,7 +200,7 @@ export default function Home() {
       const scriptRes = await fetch("/api/generate-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, model: selectedModel }),
+        body: JSON.stringify({ topic, model: selectedModel, language: getLanguageFromVoice(selectedVoice) }),
       });
       const scriptData = await scriptRes.json();
       if (!scriptRes.ok) {
@@ -236,7 +244,7 @@ export default function Home() {
       const res = await fetch("/api/generate-creative", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, model: selectedModel }),
+        body: JSON.stringify({ topic, model: selectedModel, language: getLanguageFromVoice(selectedVoice) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
@@ -283,7 +291,7 @@ export default function Home() {
       const scriptRes = await fetch("/api/generate-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: quickTopic, model: selectedModel }),
+        body: JSON.stringify({ topic: quickTopic, model: selectedModel, language: getLanguageFromVoice(selectedVoice) }),
       });
       const scriptData = await scriptRes.json();
       if (!scriptRes.ok) throw new Error(scriptData.error || "Failed to generate script");

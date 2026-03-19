@@ -5,6 +5,24 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 import { PLAN_CONFIG } from "@/lib/supabase/types";
 
+const AVATAR_COLORS = [
+  "from-blue-500 to-cyan-400",
+  "from-purple-500 to-pink-500",
+  "from-green-500 to-emerald-400",
+  "from-orange-500 to-amber-400",
+  "from-rose-500 to-red-400",
+  "from-indigo-500 to-violet-400",
+  "from-teal-500 to-cyan-400",
+];
+
+function getAvatarColor(email: string) {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 export default function UserMenu() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [open, setOpen] = useState(false);
@@ -54,10 +72,11 @@ export default function UserMenu() {
           <img
             src={profile.avatar_url}
             alt=""
-            className="w-8 h-8 rounded-full"
+            className="w-8 h-8 rounded-full border border-zinc-700"
+            referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-zinc-300 text-sm font-bold">
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(profile.email)} flex items-center justify-center text-white text-sm font-bold shadow-sm`}>
             {(profile.name || profile.email)[0].toUpperCase()}
           </div>
         )}
@@ -90,9 +109,19 @@ export default function UserMenu() {
             </div>
           </div>
 
-          {/* Email */}
-          <div className="px-4 py-2">
-            <p className="text-xs text-zinc-500 truncate">{profile.email}</p>
+          {/* User info */}
+          <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-10 h-10 rounded-full border border-zinc-700" referrerPolicy="no-referrer" />
+            ) : (
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(profile.email)} flex items-center justify-center text-white text-base font-bold`}>
+                {(profile.name || profile.email)[0].toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-sm text-white font-medium truncate">{profile.name || profile.email.split("@")[0]}</p>
+              <p className="text-xs text-zinc-500 truncate">{profile.email}</p>
+            </div>
           </div>
 
           {/* Logout */}
