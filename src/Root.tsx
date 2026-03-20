@@ -24,6 +24,26 @@ const calculateMetadata: CalculateMetadataFunction<SceneVideoProps> = ({
   };
 };
 
+const calculateDynamicMetadata: CalculateMetadataFunction<DynamicCompositionProps> = ({
+  props,
+}) => {
+  // Use explicit prop if passed from render API
+  let duration = props.durationInFrames;
+
+  // Fallback: extract from code comment // DURATION: XXX
+  if (!duration && props.code) {
+    const match = props.code.match(/\/\/\s*DURATION:\s*(\d+)/);
+    if (match) duration = parseInt(match[1], 10);
+  }
+
+  return {
+    durationInFrames: duration || 300,
+    fps: FPS,
+    width: VIDEO_WIDTH,
+    height: VIDEO_HEIGHT,
+  };
+};
+
 const defaultScenes: SceneData[] = [
   {
     type: "title",
@@ -96,6 +116,7 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           code: "import React from 'react';\nimport { AbsoluteFill } from 'remotion';\nexport default () => <AbsoluteFill style={{backgroundColor:'#0a0a0a'}}/>",
         } satisfies DynamicCompositionProps}
+        calculateMetadata={calculateDynamicMetadata}
       />
     </>
   );

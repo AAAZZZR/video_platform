@@ -52,6 +52,7 @@ function compileComponent(code: string): React.FC {
 export type DynamicCompositionProps = {
   code: string;
   audioUrl?: string;
+  durationInFrames?: number;
 };
 
 export const DynamicComposition: React.FC<DynamicCompositionProps> = ({

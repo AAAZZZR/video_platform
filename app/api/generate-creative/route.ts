@@ -100,27 +100,41 @@ For multi-scene videos, use TransitionSeries for smooth transitions:
 - For multi-section content, organize with Sequence/Series
 - Calculate total duration based on content length: aim for ~4-6 seconds per section
 - Return the total duration as a comment at the top: // DURATION: 300 (in frames)
+- CRITICAL: The DURATION value MUST exactly match your actual content. If you have 3 sections of 120 frames each = DURATION: 360
 - Return narration text as a comment block at the top (for TTS voiceover):
   // NARRATION: Your narration text here. This is what will be spoken as voiceover.
   The narration should be natural spoken language that complements the visuals. Write concise narration that fits the video duration (~2-3 words per second). If the content has multiple sections, combine all narration into one continuous paragraph.
 
+## Duration & Animation Rules (CRITICAL)
+- Every Sequence/section MUST have animations that span its FULL durationInFrames
+- Do NOT just animate an entrance and leave everything static — add continuous motion: counting numbers, typing effects, pulsing glows, floating particles, progress bars, rotating elements
+- Use interpolate() with frame ranges that cover the FULL section duration, not just the first 30 frames
+- Example: for a 150-frame section, animate across [0, 150], not just [0, 30]
+- Each section should feel alive for its entire duration
+
+## Sequencing Rules (CRITICAL — violating these causes overlap)
+- When using plain <Sequence>, the "from" of each Sequence must equal the previous Sequence's "from + durationInFrames" — NO gaps, NO overlaps
+- When using <TransitionSeries>, do NOT set "from" — the component auto-sequences. Transitions create a brief overlap (this is intentional)
+- Do NOT mix <Sequence> and <TransitionSeries> for the same content — pick one approach
+- Preferred approach for multi-section: use TransitionSeries with fade() transitions
+
 ## Example Structure
-// DURATION: 450
-// NARRATION: Welcome to our animated presentation. Here we explore the key concepts with engaging visuals and smooth transitions.
+// DURATION: 240
+// NARRATION: Welcome to our animated presentation. Here we explore the key concepts with engaging visuals.
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from 'remotion';
 
 export default function MyVideo() {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#0a0a0a' }}>
       <Sequence from={0} durationInFrames={120}>
-        {/* Scene 1 */}
+        {/* Scene 1: animations use frame 0-119 */}
       </Sequence>
       <Sequence from={120} durationInFrames={120}>
-        {/* Scene 2 */}
+        {/* Scene 2: animations use frame 0-119 (local frame inside Sequence) */}
       </Sequence>
     </AbsoluteFill>
   );

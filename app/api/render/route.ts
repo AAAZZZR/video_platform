@@ -47,6 +47,7 @@ export async function POST(request: Request) {
       inputProps = {
         code: body.code,
         audioUrl: body.audioUrl || undefined,
+        durationInFrames: body.durationInFrames || 300,
       };
     } else {
       const scenes = body.scenes;
