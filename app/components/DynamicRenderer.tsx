@@ -3,12 +3,26 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Player } from "@remotion/player";
 import * as RemotionLib from "remotion";
+import * as RemotionMedia from "@remotion/media";
+import * as RemotionSfx from "@remotion/sfx";
+import * as RemotionTransitions from "@remotion/transitions";
+import * as RemotionTransitionsFade from "@remotion/transitions/fade";
+import * as RemotionTransitionsSlide from "@remotion/transitions/slide";
+import * as RemotionPaths from "@remotion/paths";
 import { createTikTokStyleCaptions } from "@remotion/captions";
 import { transform } from "sucrase";
 import type { CaptionWord } from "@/src/types";
 
-// All Remotion APIs available to AI-generated code
-const REMOTION_EXPORTS = RemotionLib;
+const MODULE_MAP: Record<string, unknown> = {
+  "react": React,
+  "remotion": RemotionLib,
+  "@remotion/media": RemotionMedia,
+  "@remotion/sfx": RemotionSfx,
+  "@remotion/transitions": RemotionTransitions,
+  "@remotion/transitions/fade": RemotionTransitionsFade,
+  "@remotion/transitions/slide": RemotionTransitionsSlide,
+  "@remotion/paths": RemotionPaths,
+};
 
 /**
  * Compile AI-generated React/Remotion code into a usable component.
@@ -27,8 +41,8 @@ function compileComponent(code: string): React.FC {
   const moduleObj: { exports: Record<string, unknown> } = { exports: {} };
 
   const requireFn = (mod: string): unknown => {
-    if (mod === "react") return React;
-    if (mod === "remotion") return REMOTION_EXPORTS;
+    const resolved = MODULE_MAP[mod];
+    if (resolved) return resolved;
     throw new Error(`Module "${mod}" is not available in sandbox`);
   };
 
