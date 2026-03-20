@@ -47,7 +47,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npx remotion lambda sites create src/index.ts --site-name=vidcraft-ai",
     "start": "next start",
     "studio": "remotion studio",
     "build:remotion": "remotion bundle",
