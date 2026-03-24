@@ -11,6 +11,8 @@ import {
   type SceneData,
   type SceneType,
 } from "@/src/types";
+import { useI18n } from "@/lib/i18n";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 const PlayerPreview = dynamic(
   () => import("@/app/components/PlayerPreview"),
@@ -116,6 +118,17 @@ function Spinner() {
 
 // ---- Voice Selector ----
 
+const VOICE_GROUPS = [
+  { lang: "en", label: "English" },
+  { lang: "zh-CN", label: "中文 (简体)" },
+  { lang: "zh-TW", label: "中文 (繁體)" },
+  { lang: "ja", label: "日本語" },
+  { lang: "ko", label: "한국어" },
+  { lang: "ar", label: "العربية" },
+  { lang: "es", label: "Español" },
+  { lang: "fr", label: "Français" },
+] as const;
+
 function VoiceSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select
@@ -123,21 +136,17 @@ function VoiceSelector({ value, onChange }: { value: string; onChange: (v: strin
       onChange={(e) => onChange(e.target.value)}
       className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
     >
-      <optgroup label="English">
-        {VOICE_PRESETS.filter((v) => v.language === "en").map((v) => (
-          <option key={v.id} value={v.id}>{v.name}</option>
-        ))}
-      </optgroup>
-      <optgroup label="中文 (简体)">
-        {VOICE_PRESETS.filter((v) => v.language === "zh-CN").map((v) => (
-          <option key={v.id} value={v.id}>{v.name}</option>
-        ))}
-      </optgroup>
-      <optgroup label="中文 (繁體)">
-        {VOICE_PRESETS.filter((v) => v.language === "zh-TW").map((v) => (
-          <option key={v.id} value={v.id}>{v.name}</option>
-        ))}
-      </optgroup>
+      {VOICE_GROUPS.map((g) => {
+        const voices = VOICE_PRESETS.filter((v) => v.language === g.lang);
+        if (voices.length === 0) return null;
+        return (
+          <optgroup key={g.lang} label={g.label}>
+            {voices.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
+            ))}
+          </optgroup>
+        );
+      })}
     </select>
   );
 }
@@ -147,8 +156,22 @@ function VoiceSelector({ value, onChange }: { value: string; onChange: (v: strin
 function getLanguageFromVoice(voiceId: string): string {
   if (voiceId.startsWith("zh-TW")) return "Traditional Chinese (繁體中文)";
   if (voiceId.startsWith("zh-CN")) return "Simplified Chinese (简体中文)";
+  if (voiceId.startsWith("ja-")) return "Japanese (日本語)";
+  if (voiceId.startsWith("ko-")) return "Korean (한국어)";
+  if (voiceId.startsWith("ar-")) return "Arabic (العربية)";
+  if (voiceId.startsWith("es-")) return "Spanish (Español)";
+  if (voiceId.startsWith("fr-")) return "French (Français)";
   return "English";
 }
+
+// ---- Duration description i18n key map ----
+
+const DURATION_DESC_KEYS: Record<string, string> = {
+  Short: "create.short",
+  Standard: "create.standard",
+  Extended: "create.extended",
+  Long: "create.long",
+};
 
 // ---- Types ----
 
@@ -160,6 +183,8 @@ type Mode = "template" | "creative";
 // ============================================================
 
 export default function Home() {
+  const { t } = useI18n();
+
   // ---- Mode ----
   const [mode, setMode] = useState<Mode>("template");
 
@@ -428,7 +453,7 @@ export default function Home() {
       case "title":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Subtitle</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.subtitle")}</label>
             <input
               type="text"
               value={scene.subtitle}
@@ -441,7 +466,7 @@ export default function Home() {
       case "text":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Body</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.body")}</label>
             <textarea
               value={scene.body}
               onChange={(e) => updateSceneField(index, "body", e.target.value)}
@@ -454,7 +479,7 @@ export default function Home() {
       case "bullets":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Bullet Points</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.bulletPoints")}</label>
             <div className="space-y-2">
               {scene.items.map((item, bi) => (
                 <div key={bi} className="flex gap-2">
@@ -483,7 +508,7 @@ export default function Home() {
                 onClick={() => updateSceneField(index, "items", [...scene.items, "New item"])}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                + Add item
+                {t("create.addItem")}
               </button>
             </div>
           </div>
@@ -492,7 +517,7 @@ export default function Home() {
       case "table":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Table</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.table")}</label>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -555,7 +580,7 @@ export default function Home() {
                 }}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                + Add row
+                {t("create.addRow")}
               </button>
               <button
                 onClick={() => {
@@ -565,7 +590,7 @@ export default function Home() {
                 }}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                + Add column
+                {t("create.addColumn")}
               </button>
             </div>
           </div>
@@ -574,14 +599,14 @@ export default function Home() {
       case "chart-bar":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Chart Items</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.chartItems")}</label>
             <div className="space-y-2">
               {scene.items.map((item, bi) => (
                 <div key={bi} className="flex gap-2">
                   <input
                     type="text"
                     value={item.label}
-                    placeholder="Label"
+                    placeholder={t("create.label")}
                     onChange={(e) => {
                       const newItems = [...scene.items];
                       newItems[bi] = { ...newItems[bi], label: e.target.value };
@@ -611,7 +636,7 @@ export default function Home() {
                 onClick={() => updateSceneField(index, "items", [...scene.items, { label: "New", value: 50 }])}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                + Add item
+                {t("create.addItem")}
               </button>
             </div>
           </div>
@@ -620,14 +645,14 @@ export default function Home() {
       case "stats":
         return (
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">Stats</label>
+            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.stats")}</label>
             <div className="space-y-2">
               {scene.items.map((item, bi) => (
                 <div key={bi} className="flex gap-2">
                   <input
                     type="text"
                     value={item.value}
-                    placeholder="Value (e.g. 95%)"
+                    placeholder={t("create.valuePlaceholder")}
                     onChange={(e) => {
                       const newItems = [...scene.items];
                       newItems[bi] = { ...newItems[bi], value: e.target.value };
@@ -638,7 +663,7 @@ export default function Home() {
                   <input
                     type="text"
                     value={item.label}
-                    placeholder="Label"
+                    placeholder={t("create.label")}
                     onChange={(e) => {
                       const newItems = [...scene.items];
                       newItems[bi] = { ...newItems[bi], label: e.target.value };
@@ -658,7 +683,7 @@ export default function Home() {
                 onClick={() => updateSceneField(index, "items", [...scene.items, { value: "0", label: "New stat" }])}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
-                + Add stat
+                {t("create.addStat")}
               </button>
             </div>
           </div>
@@ -669,7 +694,7 @@ export default function Home() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">Left Title</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("create.leftTitle")}</label>
                 <input
                   type="text"
                   value={scene.leftTitle}
@@ -678,7 +703,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">Right Title</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("create.rightTitle")}</label>
                 <input
                   type="text"
                   value={scene.rightTitle}
@@ -689,7 +714,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">Left Items</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("create.leftItems")}</label>
                 <div className="space-y-2">
                   {scene.leftItems.map((item, bi) => (
                     <div key={bi} className="flex gap-1">
@@ -715,12 +740,12 @@ export default function Home() {
                     onClick={() => updateSceneField(index, "leftItems", [...scene.leftItems, "New item"])}
                     className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
                   >
-                    + Add
+                    {t("create.add")}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">Right Items</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("create.rightItems")}</label>
                 <div className="space-y-2">
                   {scene.rightItems.map((item, bi) => (
                     <div key={bi} className="flex gap-1">
@@ -746,7 +771,7 @@ export default function Home() {
                     onClick={() => updateSceneField(index, "rightItems", [...scene.rightItems, "New item"])}
                     className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
                   >
-                    + Add
+                    {t("create.add")}
                   </button>
                 </div>
               </div>
@@ -758,7 +783,7 @@ export default function Home() {
         return (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1.5">Quote</label>
+              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.quote")}</label>
               <textarea
                 value={scene.quote}
                 onChange={(e) => updateSceneField(index, "quote", e.target.value)}
@@ -767,7 +792,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1.5">Author</label>
+              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.author")}</label>
               <input
                 type="text"
                 value={scene.author}
@@ -782,7 +807,7 @@ export default function Home() {
         return (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1.5">Code</label>
+              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.code")}</label>
               <textarea
                 value={scene.code}
                 onChange={(e) => updateSceneField(index, "code", e.target.value)}
@@ -791,13 +816,13 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1.5">Language</label>
+              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.language")}</label>
               <input
                 type="text"
                 value={scene.language}
                 onChange={(e) => updateSceneField(index, "language", e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="javascript, python, etc."
+                placeholder={t("create.languagePlaceholder")}
               />
             </div>
           </div>
@@ -817,7 +842,7 @@ export default function Home() {
       {/* Preview */}
       {scenes.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">Preview</h2>
+          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">{t("common.preview")}</h2>
           <div className="rounded-xl overflow-hidden border border-zinc-800 bg-black">
             <PlayerPreview scenes={scenes} />
           </div>
@@ -833,11 +858,11 @@ export default function Home() {
               <polygon points="10 8 16 12 10 16 10 8" />
             </svg>
           </div>
-          <p className="text-zinc-500 text-sm mb-1">No scenes yet</p>
+          <p className="text-zinc-500 text-sm mb-1">{t("create.noScenes")}</p>
           <p className="text-zinc-600 text-xs">
             {mode === "template"
-              ? "Enter a topic above and click Generate Video to get started"
-              : "Paste your content above and click Create Video to get started"}
+              ? t("create.noScenesTemplate")
+              : t("create.noScenesCreative")}
           </p>
         </section>
       )}
@@ -847,14 +872,14 @@ export default function Home() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-              Scenes ({scenes.length})
+              {t("create.scenes")} ({scenes.length})
             </h2>
             <button
               onClick={addScene}
               className="text-sm text-blue-400 hover:text-blue-300 transition-colors cursor-pointer flex items-center gap-1"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
-              Add Scene
+              {t("create.addScene")}
             </button>
           </div>
 
@@ -921,7 +946,7 @@ export default function Home() {
                           {/* Scene type + title row */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                              <label className="block text-xs text-zinc-500 mb-1.5">Scene Type</label>
+                              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.sceneType")}</label>
                               <select
                                 value={scene.type}
                                 onChange={(e) => changeSceneType(index, e.target.value as SceneType)}
@@ -933,7 +958,7 @@ export default function Home() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-zinc-500 mb-1.5">Title</label>
+                              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.title")}</label>
                               <input
                                 type="text"
                                 value={scene.title}
@@ -942,7 +967,7 @@ export default function Home() {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-zinc-500 mb-1.5">Duration (seconds)</label>
+                              <label className="block text-xs text-zinc-500 mb-1.5">{t("create.duration")}</label>
                               <input
                                 type="number"
                                 min={1}
@@ -962,7 +987,7 @@ export default function Home() {
 
                           {/* Background picker */}
                           <div>
-                            <label className="block text-xs text-zinc-500 mb-1.5">Background</label>
+                            <label className="block text-xs text-zinc-500 mb-1.5">{t("create.background")}</label>
                             <div className="flex gap-2 flex-wrap">
                               {BACKGROUND_PRESETS.map((preset, pi) => (
                                 <button
@@ -983,7 +1008,7 @@ export default function Home() {
                         {/* Right: Single-scene preview */}
                         <div className="lg:w-[45%] lg:shrink-0">
                           <div className="sticky top-32">
-                            <label className="block text-xs text-zinc-500 mb-1.5">Preview</label>
+                            <label className="block text-xs text-zinc-500 mb-1.5">{t("common.preview")}</label>
                             <div className="rounded-lg overflow-hidden border border-zinc-800 bg-black">
                               <ScenePreview scene={scene} />
                             </div>
@@ -1002,7 +1027,7 @@ export default function Home() {
       {/* Render Section */}
       {scenes.length > 0 && (
         <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-6">
-          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-5">Render</h2>
+          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-5">{t("common.render")}</h2>
 
           {renderState === "idle" && (
             <div className="flex gap-3">
@@ -1015,7 +1040,7 @@ export default function Home() {
                   <rect x="2" y="3" width="20" height="14" rx="2" />
                   <path d="M8 21h8M12 17v4" />
                 </svg>
-                Render Video on Cloud
+                {t("create.renderCloud")}
               </button>
               <button
                 onClick={handleExportPptx}
@@ -1027,7 +1052,7 @@ export default function Home() {
                   <polyline points="14 2 14 8 20 8" />
                   <path d="M12 18v-6M9 15l3 3 3-3" />
                 </svg>
-                Export PPT
+                {t("create.exportPpt")}
               </button>
             </div>
           )}
@@ -1035,7 +1060,7 @@ export default function Home() {
           {renderState === "rendering" && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-zinc-400">Rendering...</span>
+                <span className="text-sm text-zinc-400">{t("create.rendering")}</span>
                 <span className="text-sm font-mono text-zinc-400">{Math.round(progress * 100)}%</span>
               </div>
               <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
@@ -1044,7 +1069,7 @@ export default function Home() {
                   style={{ width: `${progress * 100}%` }}
                 />
               </div>
-              <p className="text-xs text-zinc-600 mt-2">Rendering on AWS Lambda -- this usually takes 10-30 seconds</p>
+              <p className="text-xs text-zinc-600 mt-2">{t("create.renderingNote")}</p>
             </div>
           )}
 
@@ -1054,7 +1079,7 @@ export default function Home() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                <span className="font-medium">Render complete!</span>
+                <span className="font-medium">{t("create.renderComplete")}</span>
               </div>
               <div className="flex gap-3 justify-center">
                 <a
@@ -1063,7 +1088,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-6 rounded-lg transition-colors inline-block"
                 >
-                  Download Video
+                  {t("create.downloadVideo")}
                 </a>
                 <button
                   onClick={() => {
@@ -1075,7 +1100,7 @@ export default function Home() {
                   }}
                   className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors cursor-pointer"
                 >
-                  Render Again
+                  {t("create.renderAgain")}
                 </button>
               </div>
             </div>
@@ -1090,7 +1115,7 @@ export default function Home() {
                 onClick={() => { setRenderState("idle"); setError(null); }}
                 className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors cursor-pointer"
               >
-                Try Again
+                {t("common.tryAgain")}
               </button>
             </div>
           )}
@@ -1103,9 +1128,9 @@ export default function Home() {
   // Tab Definitions
   // ============================================================
 
-  const tabs: { id: Mode; label: string; zhLabel: string; icon: React.ReactNode }[] = [
-    { id: "template", label: "Template", zhLabel: "模板", icon: <TemplateIcon /> },
-    { id: "creative", label: "Creative", zhLabel: "創意動畫", icon: <CreativeIcon /> },
+  const tabs: { id: Mode; labelKey: string; zhLabelKey: string; icon: React.ReactNode }[] = [
+    { id: "template", labelKey: "create.template", zhLabelKey: "create.templateCn", icon: <TemplateIcon /> },
+    { id: "creative", labelKey: "create.creative", zhLabelKey: "create.creativeCn", icon: <CreativeIcon /> },
   ];
 
   // ============================================================
@@ -1120,13 +1145,14 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-3">
               <img src="/logo.svg" alt="VidCraft AI" width={36} height={36} className="rounded-lg" />
-              <span className="text-xl font-bold text-white tracking-tight">VidCraft AI</span>
+              <span className="text-xl font-bold text-white tracking-tight">{t("common.vidcraft")}</span>
             </a>
           </div>
           <nav className="flex items-center gap-4">
-            <span className="text-sm text-white font-medium px-3 py-2 rounded-lg bg-zinc-800">Video</span>
-            <a href="/poster" className="text-sm text-zinc-400 hover:text-white transition-colors">Poster</a>
-            <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</a>
+            <span className="text-sm text-white font-medium px-3 py-2 rounded-lg bg-zinc-800">{t("common.video")}</span>
+            <a href="/poster" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.poster")}</a>
+            <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.dashboard")}</a>
+            <LanguageSelector />
             <UserMenu />
           </nav>
         </div>
@@ -1147,8 +1173,8 @@ export default function Home() {
                 }`}
               >
                 {tab.icon}
-                <span>{tab.label}</span>
-                <span className="text-xs opacity-60">({tab.zhLabel})</span>
+                <span>{t(tab.labelKey)}</span>
+                <span className="text-xs opacity-60">({t(tab.zhLabelKey)})</span>
                 {/* Active indicator */}
                 {mode === tab.id && (
                   <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-500 rounded-full" />
@@ -1169,21 +1195,21 @@ export default function Home() {
             <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-6">
               <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 text-xs flex items-center justify-center font-bold">1</span>
-                Generate Video
+                {t("create.generateVideo")}
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1.5">Topic or Description</label>
+                  <label className="block text-xs text-zinc-500 mb-1.5">{t("create.topicLabel")}</label>
                   <textarea
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
-                    placeholder="Describe the video you want to create... e.g. 'A 5-slide presentation about the benefits of remote work'"
+                    placeholder={t("create.topicPlaceholder")}
                     rows={3}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-2">AI Model</label>
+                  <label className="block text-xs text-zinc-500 mb-2">{t("create.aiModel")}</label>
                   <div className="flex gap-2">
                     {MODEL_OPTIONS.map((m) => (
                       <button
@@ -1202,11 +1228,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-2">Voice</label>
+                  <label className="block text-xs text-zinc-500 mb-2">{t("create.voice")}</label>
                   <VoiceSelector value={selectedVoice} onChange={setSelectedVoice} />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-2">Target Duration</label>
+                  <label className="block text-xs text-zinc-500 mb-2">{t("create.targetDuration")}</label>
                   <div className="flex gap-2">
                     {DURATION_OPTIONS.map((d) => (
                       <button
@@ -1219,7 +1245,7 @@ export default function Home() {
                         }`}
                       >
                         {d.label}
-                        <span className="ml-1.5 text-xs opacity-60">{d.description}</span>
+                        <span className="ml-1.5 text-xs opacity-60">{t(DURATION_DESC_KEYS[d.description])}</span>
                       </button>
                     ))}
                   </div>
@@ -1237,14 +1263,14 @@ export default function Home() {
                   {generating ? (
                     <>
                       <Spinner />
-                      {progressText || "Generating..."}
+                      {progressText || t("create.generating")}
                     </>
                   ) : (
                     <>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polygon points="5 3 19 12 5 21 5 3" />
                       </svg>
-                      Generate Video
+                      {t("create.generateVideo")}
                     </>
                   )}
                 </button>
@@ -1264,21 +1290,21 @@ export default function Home() {
             <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-6">
               <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <CreativeIcon className="text-zinc-400" />
-                Creative Animation
+                {t("create.creativeAnimation")}
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-1.5">Topic / Description</label>
+                  <label className="block text-xs text-zinc-500 mb-1.5">{t("create.creativeTopic")}</label>
                   <textarea
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
-                    placeholder="Describe the animation you want... e.g. 'A colorful particle system that forms into the text Hello World'"
+                    placeholder={t("create.creativePlaceholder")}
                     rows={3}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-2">AI Model</label>
+                  <label className="block text-xs text-zinc-500 mb-2">{t("create.aiModel")}</label>
                   <div className="flex gap-2">
                     {MODEL_OPTIONS.map((m) => (
                       <button
@@ -1298,7 +1324,7 @@ export default function Home() {
                 </div>
                 <VoiceSelector value={selectedVoice} onChange={setSelectedVoice} />
                 <div>
-                  <label className="block text-xs text-zinc-500 mb-2">Target Duration</label>
+                  <label className="block text-xs text-zinc-500 mb-2">{t("create.targetDuration")}</label>
                   <div className="flex gap-2">
                     {DURATION_OPTIONS.map((d) => (
                       <button
@@ -1311,7 +1337,7 @@ export default function Home() {
                         }`}
                       >
                         {d.label}
-                        <span className="ml-1.5 text-xs opacity-60">{d.description}</span>
+                        <span className="ml-1.5 text-xs opacity-60">{t(DURATION_DESC_KEYS[d.description])}</span>
                       </button>
                     ))}
                   </div>
@@ -1329,12 +1355,12 @@ export default function Home() {
                   {generatingCreative ? (
                     <>
                       <Spinner />
-                      {progressText || "Generating..."}
+                      {progressText || t("create.generating")}
                     </>
                   ) : (
                     <>
                       <CreativeIcon />
-                      Generate Animation
+                      {t("create.generateAnimation")}
                     </>
                   )}
                 </button>
@@ -1344,7 +1370,7 @@ export default function Home() {
             {/* Preview */}
             {creativeCode && (
               <section>
-                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">Preview</h2>
+                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">{t("common.preview")}</h2>
                 <div className="rounded-xl overflow-hidden border border-zinc-800 bg-black">
                   <DynamicRenderer
                     code={creativeCode}
@@ -1360,7 +1386,7 @@ export default function Home() {
             {creativeCode && (
               <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Generated Code</h2>
+                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">{t("create.generatedCode")}</h2>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(creativeCode);
@@ -1372,12 +1398,12 @@ export default function Home() {
                     {copied ? (
                       <>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
-                        Copied!
+                        {t("common.copied")}
                       </>
                     ) : (
                       <>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
-                        Copy
+                        {t("common.copy")}
                       </>
                     )}
                   </button>
@@ -1391,7 +1417,7 @@ export default function Home() {
             {/* Render Section for Creative */}
             {creativeCode && (
               <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-6">
-                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-5">Render</h2>
+                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-5">{t("common.render")}</h2>
 
                 {renderState === "idle" && (
                   <button
@@ -1402,14 +1428,14 @@ export default function Home() {
                       <rect x="2" y="3" width="20" height="14" rx="2" />
                       <path d="M8 21h8M12 17v4" />
                     </svg>
-                    Render &amp; Download
+                    {t("create.renderDownload")}
                   </button>
                 )}
 
                 {renderState === "rendering" && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-zinc-400">Rendering...</span>
+                      <span className="text-sm text-zinc-400">{t("create.rendering")}</span>
                       <span className="text-sm font-mono text-zinc-400">{Math.round(progress * 100)}%</span>
                     </div>
                     <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
@@ -1422,11 +1448,11 @@ export default function Home() {
                   <div className="text-center">
                     <div className="inline-flex items-center gap-2 text-green-400 mb-4">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
-                      <span className="font-medium">Render complete!</span>
+                      <span className="font-medium">{t("create.renderComplete")}</span>
                     </div>
                     <div className="flex gap-3 justify-center">
-                      <a href={outputUrl} target="_blank" rel="noopener noreferrer" className="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2.5 px-6 rounded-lg transition-colors inline-block">Download Video</a>
-                      <button onClick={() => { setRenderState("idle"); setRenderId(null); setBucketName(null); setProgress(0); setOutputUrl(null); }} className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors cursor-pointer">Render Again</button>
+                      <a href={outputUrl} target="_blank" rel="noopener noreferrer" className="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2.5 px-6 rounded-lg transition-colors inline-block">{t("create.downloadVideo")}</a>
+                      <button onClick={() => { setRenderState("idle"); setRenderId(null); setBucketName(null); setProgress(0); setOutputUrl(null); }} className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors cursor-pointer">{t("create.renderAgain")}</button>
                     </div>
                   </div>
                 )}
@@ -1434,7 +1460,7 @@ export default function Home() {
                 {renderState === "error" && (
                   <div>
                     <div className="bg-red-950/50 border border-red-900 rounded-lg p-4 mb-4"><p className="text-red-400 text-sm">{error}</p></div>
-                    <button onClick={() => { setRenderState("idle"); setError(null); }} className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors cursor-pointer">Try Again</button>
+                    <button onClick={() => { setRenderState("idle"); setError(null); }} className="bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors cursor-pointer">{t("common.tryAgain")}</button>
                   </div>
                 )}
               </section>
@@ -1446,7 +1472,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center text-zinc-600 text-xs mt-auto pb-10 pt-16">
-        VidCraft AI -- Powered by Remotion + AWS Lambda
+        {t("common.footer")}
       </footer>
     </div>
   );

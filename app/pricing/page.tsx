@@ -4,35 +4,11 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 import { PLAN_CONFIG } from "@/lib/supabase/types";
-
-const FEATURES = {
-  free: [
-    "30 credits / month",
-    "720p resolution",
-    "Watermark on videos",
-    "3 generations per day",
-    "Template mode",
-  ],
-  t1: [
-    "200 credits / month",
-    "1080p resolution",
-    "No watermark",
-    "50 generations per day",
-    "Template + Quick mode",
-    "Edge TTS voices",
-  ],
-  t2: [
-    "1,000 credits / month",
-    "1080p resolution",
-    "No watermark",
-    "Unlimited generations",
-    "All modes including Creative",
-    "Priority rendering",
-    "All TTS voices",
-  ],
-};
+import { useI18n } from "@/lib/i18n";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 export default function PricingPage() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const supabase = createClient();
@@ -110,6 +86,33 @@ export default function PricingPage() {
 
   const currentPlan = profile?.plan || "free";
 
+  const FEATURES = {
+    free: [
+      t("pricing_page.creditsMonth", { count: 30 }),
+      t("pricing_page.resolution720"),
+      t("pricing_page.watermark"),
+      t("pricing_page.gensPerDay3"),
+      t("pricing_page.templateMode"),
+    ],
+    t1: [
+      t("pricing_page.creditsMonth", { count: 200 }),
+      t("pricing_page.resolution1080"),
+      t("pricing_page.noWatermark"),
+      t("pricing_page.gensPerDay50"),
+      t("pricing_page.templateQuick"),
+      t("pricing_page.edgeTts"),
+    ],
+    t2: [
+      t("pricing_page.creditsMonth", { count: "1,000" }),
+      t("pricing_page.resolution1080"),
+      t("pricing_page.noWatermark"),
+      t("pricing_page.unlimitedGens"),
+      t("pricing_page.allModes"),
+      t("pricing_page.priorityRendering"),
+      t("pricing_page.allTts"),
+    ],
+  };
+
   // Each plan card
   const plans = [
     { key: "free" as const, name: "Free", price: 0, popular: false },
@@ -124,17 +127,20 @@ export default function PricingPage() {
       <header className="border-b border-zinc-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 text-white hover:opacity-80 transition-opacity">
-            <img src="/logo.svg" alt="VidCraft AI" width={36} height={36} className="rounded-lg" />
-            <span className="text-xl font-bold tracking-tight">VidCraft AI</span>
+            <img src="/logo.svg" alt={t("common.vidcraft")} width={36} height={36} className="rounded-lg" />
+            <span className="text-xl font-bold tracking-tight">{t("common.vidcraft")}</span>
           </a>
-          <a href="/" className="text-sm text-zinc-400 hover:text-white transition-colors">← Back</a>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <a href="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.back")}</a>
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white mb-3">Choose Your Plan</h1>
-          <p className="text-zinc-400">Unlock more credits and premium features</p>
+          <h1 className="text-3xl font-bold text-white mb-3">{t("pricing_page.chooseYourPlan")}</h1>
+          <p className="text-zinc-400">{t("pricing_page.unlockMore")}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -157,7 +163,7 @@ export default function PricingPage() {
                 {popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      POPULAR
+                      {t("pricing_page.popular")}
                     </span>
                   </div>
                 )}
@@ -168,7 +174,7 @@ export default function PricingPage() {
                 {/* Price */}
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-white">${price}</span>
-                  <span className="text-zinc-500 text-sm"> / month</span>
+                  <span className="text-zinc-500 text-sm"> / {t("pricing_page.perMonth")}</span>
                 </div>
 
                 {/* Features */}
@@ -190,7 +196,7 @@ export default function PricingPage() {
                       disabled
                       className="w-full py-2.5 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-500 cursor-not-allowed"
                     >
-                      Current Plan
+                      {t("pricing_page.currentPlan")}
                     </button>
                     {currentPlan !== "free" && (
                       <button
@@ -198,7 +204,7 @@ export default function PricingPage() {
                         disabled={loading === "manage"}
                         className="w-full mt-2 py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
                       >
-                        {loading === "manage" ? "Loading..." : "Manage Subscription"}
+                        {loading === "manage" ? t("common.loading") : t("pricing_page.manageSubscription")}
                       </button>
                     )}
                   </div>
@@ -212,7 +218,7 @@ export default function PricingPage() {
                         : "bg-white hover:bg-zinc-100 text-zinc-900"
                     } disabled:opacity-50`}
                   >
-                    {loading === key ? "Loading..." : `Upgrade to ${name}`}
+                    {loading === key ? t("common.loading") : t("pricing_page.upgradeTo", { name: name })}
                   </button>
                 ) : isDowngrade ? (
                   <button
@@ -220,7 +226,7 @@ export default function PricingPage() {
                     disabled={loading === "manage"}
                     className="w-full py-2.5 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-colors cursor-pointer"
                   >
-                    Manage Subscription
+                    {t("pricing_page.manageSubscription")}
                   </button>
                 ) : (
                   <button
@@ -228,7 +234,7 @@ export default function PricingPage() {
                     disabled={loading === key}
                     className="w-full py-2.5 rounded-lg text-sm font-semibold bg-white hover:bg-zinc-100 text-zinc-900 transition-all cursor-pointer disabled:opacity-50"
                   >
-                    {loading === key ? "Loading..." : `Switch to ${name}`}
+                    {loading === key ? t("common.loading") : t("pricing_page.switchTo", { name: name })}
                   </button>
                 )}
               </div>

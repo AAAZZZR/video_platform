@@ -167,6 +167,21 @@ export const VOICE_PRESETS: VoicePreset[] = [
   // Chinese (Traditional)
   { id: "zh-TW-HsiaoChenNeural", name: "曉臻 (繁中女聲)", language: "zh-TW", gender: "female" },
   { id: "zh-TW-YunJheNeural", name: "雲哲 (繁中男聲)", language: "zh-TW", gender: "male" },
+  // Japanese
+  { id: "ja-JP-NanamiNeural", name: "七海 (日本語女性)", language: "ja", gender: "female" },
+  { id: "ja-JP-KeitaNeural", name: "圭太 (日本語男性)", language: "ja", gender: "male" },
+  // Korean
+  { id: "ko-KR-SunHiNeural", name: "선히 (한국어 여성)", language: "ko", gender: "female" },
+  { id: "ko-KR-InJoonNeural", name: "인준 (한국어 남성)", language: "ko", gender: "male" },
+  // Arabic
+  { id: "ar-SA-ZariyahNeural", name: "زارية (عربي أنثى)", language: "ar", gender: "female" },
+  { id: "ar-SA-HamedNeural", name: "حامد (عربي ذكر)", language: "ar", gender: "male" },
+  // Spanish
+  { id: "es-MX-DaliaNeural", name: "Dalia (Español Mujer)", language: "es", gender: "female" },
+  { id: "es-MX-JorgeNeural", name: "Jorge (Español Hombre)", language: "es", gender: "male" },
+  // French
+  { id: "fr-FR-DeniseNeural", name: "Denise (Français Femme)", language: "fr", gender: "female" },
+  { id: "fr-FR-HenriNeural", name: "Henri (Français Homme)", language: "fr", gender: "male" },
 ];
 
 // ---- AI Model Options ----

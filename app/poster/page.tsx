@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { POSTER_SIZES, type PosterElement } from "@/skills/poster/schema";
 import { MODEL_OPTIONS } from "@/src/types";
+import { useI18n } from "@/lib/i18n";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 const PosterCanvas = dynamic(
   () => import("@/app/components/PosterCanvas"),
@@ -18,6 +20,7 @@ const PosterToolbar = dynamic(
 type CanvasInstance = import("fabric").Canvas;
 
 export default function PosterPage() {
+  const { t } = useI18n();
   const [topic, setTopic] = useState("");
   const [selectedSize, setSelectedSize] = useState<(typeof POSTER_SIZES)[number]>(POSTER_SIZES[0]);
   const [customWidth, setCustomWidth] = useState(1080);
@@ -96,13 +99,14 @@ export default function PosterPage() {
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-3">
               <img src="/logo.svg" alt="VidCraft AI" width={36} height={36} className="rounded-lg" />
-              <span className="text-xl font-bold tracking-tight">VidCraft AI</span>
+              <span className="text-xl font-bold tracking-tight">{t("common.vidcraft")}</span>
             </a>
           </div>
           <nav className="flex items-center gap-4">
-            <a href="/create" className="text-sm text-zinc-400 hover:text-white transition-colors">Video</a>
-            <span className="text-sm text-white font-medium px-3 py-2 rounded-lg bg-zinc-800">Poster</span>
-            <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</a>
+            <a href="/create" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.video")}</a>
+            <span className="text-sm text-white font-medium px-3 py-2 rounded-lg bg-zinc-800">{t("common.poster")}</span>
+            <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("common.dashboard")}</a>
+            <LanguageSelector />
           </nav>
         </div>
       </header>
@@ -110,14 +114,14 @@ export default function PosterPage() {
       <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         {/* Input Section */}
         <section className="border border-zinc-800 rounded-xl bg-zinc-900/50 p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Create Poster</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">{t("poster.createPoster")}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1.5">Describe your poster</label>
+              <label className="block text-xs text-zinc-500 mb-1.5">{t("poster.describePoster")}</label>
               <textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g. A music festival poster for 'Summer Beats 2026' on August 15 at Taipei Arena, featuring DJ Shadow and Aurora"
+                placeholder={t("poster.posterPlaceholder")}
                 rows={3}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
               />
@@ -125,7 +129,7 @@ export default function PosterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">Size</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("poster.size")}</label>
                 <select
                   value={selectedSize.id}
                   onChange={(e) => {
@@ -150,7 +154,7 @@ export default function PosterPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-zinc-500 mb-1.5">AI Model</label>
+                <label className="block text-xs text-zinc-500 mb-1.5">{t("create.aiModel")}</label>
                 <div className="flex gap-2">
                   {MODEL_OPTIONS.map((m) => (
                     <button
@@ -186,7 +190,7 @@ export default function PosterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Generating poster...
+                  {t("poster.generatingPoster")}
                 </>
               ) : (
                 <>
@@ -195,7 +199,7 @@ export default function PosterPage() {
                     <circle cx="8.5" cy="8.5" r="1.5" />
                     <path d="M21 15l-5-5L5 21" />
                   </svg>
-                  Generate Poster
+                  {t("poster.generatePoster")}
                 </>
               )}
             </button>
@@ -205,7 +209,7 @@ export default function PosterPage() {
         {/* Detected Skills */}
         {detectedSkills.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-zinc-600">Skills used:</span>
+            <span className="text-xs text-zinc-600">{t("poster.skillsUsed")}</span>
             {detectedSkills.map((skill) => (
               <span key={skill} className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 {skill}
@@ -218,14 +222,14 @@ export default function PosterPage() {
         {posterBg && posterElements && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Editor</h2>
+              <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">{t("poster.editor")}</h2>
               <button
                 onClick={downloadPng}
                 disabled={!canvasInstance}
                 className="text-sm bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-                Download PNG
+                {t("poster.downloadPng")}
               </button>
             </div>
 
@@ -244,7 +248,7 @@ export default function PosterPage() {
         )}
 
         <footer className="text-center text-zinc-600 text-xs mt-16 pb-10">
-          VidCraft AI — Poster Generator
+          {t("poster.footerPoster")}
         </footer>
       </main>
     </div>

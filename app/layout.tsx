@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Providers from "./providers";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vidcraft.ai";
@@ -70,9 +71,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-TW">
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body style={{ margin: 0, backgroundColor: "#09090b", color: "white" }}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

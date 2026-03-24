@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile, Project, CreditLog } from "@/lib/supabase/types";
 import { PLAN_CONFIG } from "@/lib/supabase/types";
 import UserMenu from "@/app/components/UserMenu";
+import { useI18n } from "@/lib/i18n";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 type Render = {
   id: string;
@@ -43,6 +45,7 @@ function formatDateTime(dateStr: string): string {
 }
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [renders, setRenders] = useState<Render[]>([]);
@@ -97,7 +100,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-2 border-zinc-700 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-sm text-zinc-500">Loading dashboard...</p>
+          <p className="text-sm text-zinc-500">{t("dashboard.loadingDashboard")}</p>
         </div>
       </div>
     );
@@ -107,12 +110,12 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-zinc-400 mb-4">Unable to load profile.</p>
+          <p className="text-zinc-400 mb-4">{t("dashboard.unableToLoad")}</p>
           <Link
             href="/login"
             className="text-blue-400 hover:text-blue-300 underline"
           >
-            Sign in
+            {t("common.signIn")}
           </Link>
         </div>
       </div>
@@ -132,9 +135,9 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.svg" alt="VidCraft AI" width={36} height={36} className="rounded-lg" />
+              <img src="/logo.svg" alt={t("common.vidcraft")} width={36} height={36} className="rounded-lg" />
               <span className="text-xl font-bold tracking-tight">
-                VidCraft AI
+                {t("common.vidcraft")}
               </span>
             </Link>
           </div>
@@ -143,20 +146,21 @@ export default function DashboardPage() {
               href="/create"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
-              Video
+              {t("common.video")}
             </Link>
             <Link
               href="/poster"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
-              Poster
+              {t("common.poster")}
             </Link>
             <Link
               href="/dashboard"
               className="text-sm text-white font-medium px-3 py-2 rounded-lg bg-zinc-800"
             >
-              Dashboard
+              {t("common.dashboard")}
             </Link>
+            <LanguageSelector />
             <UserMenu />
           </nav>
         </div>
@@ -166,9 +170,9 @@ export default function DashboardPage() {
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         {/* Page title */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.title")}</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Your account overview and recent activity
+            {t("dashboard.subtitle")}
           </p>
         </div>
 
@@ -178,7 +182,7 @@ export default function DashboardPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  Current Plan
+                  {t("dashboard.currentPlan")}
                 </span>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-blue-300 font-medium">
                   {planConfig.name}
@@ -204,7 +208,7 @@ export default function DashboardPage() {
                 />
               </div>
               <p className="text-xs text-zinc-500 mt-1.5">
-                {creditPercent.toFixed(1)}% remaining
+                {creditPercent.toFixed(1)}% {t("dashboard.remaining")}
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -212,13 +216,13 @@ export default function DashboardPage() {
                 href="/pricing"
                 className="text-sm px-5 py-2.5 rounded-lg border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all text-center"
               >
-                {profile.plan === "free" ? "Upgrade Plan" : "Manage Plan"}
+                {profile.plan === "free" ? t("dashboard.upgradePlan") : t("dashboard.managePlan")}
               </Link>
               <Link
                 href="/create"
                 className="text-sm px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium hover:from-blue-600 hover:to-purple-700 transition-all text-center"
               >
-                New Video
+                {t("dashboard.newVideo")}
               </Link>
             </div>
           </div>
@@ -230,20 +234,20 @@ export default function DashboardPage() {
           <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">
-                Recent Projects
+                {t("dashboard.recentProjects")}
               </h2>
               <span className="text-xs text-zinc-600">
-                {projects.length} shown
+                {t("dashboard.shown", { count: projects.length })}
               </span>
             </div>
             {projects.length === 0 ? (
               <div className="px-5 py-10 text-center">
-                <p className="text-sm text-zinc-500 mb-3">No projects yet</p>
+                <p className="text-sm text-zinc-500 mb-3">{t("dashboard.noProjects")}</p>
                 <Link
                   href="/create"
                   className="text-sm text-blue-400 hover:text-blue-300"
                 >
-                  Create your first video
+                  {t("dashboard.createFirst")}
                 </Link>
               </div>
             ) : (
@@ -302,20 +306,20 @@ export default function DashboardPage() {
           <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">
-                Recent Renders
+                {t("dashboard.recentRenders")}
               </h2>
               <span className="text-xs text-zinc-600">
-                {renders.length} shown
+                {t("dashboard.shown", { count: renders.length })}
               </span>
             </div>
             {renders.length === 0 ? (
               <div className="px-5 py-10 text-center">
-                <p className="text-sm text-zinc-500 mb-3">No renders yet</p>
+                <p className="text-sm text-zinc-500 mb-3">{t("dashboard.noRenders")}</p>
                 <Link
                   href="/create"
                   className="text-sm text-blue-400 hover:text-blue-300"
                 >
-                  Create and render a video
+                  {t("dashboard.createAndRender")}
                 </Link>
               </div>
             ) : (
@@ -373,7 +377,7 @@ export default function DashboardPage() {
                             rel="noopener noreferrer"
                             className="text-xs px-3 py-1.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/25 hover:bg-blue-500/25 transition-colors font-medium"
                           >
-                            Download
+                            {t("common.download")}
                           </a>
                         )}
                       </div>
@@ -389,15 +393,15 @@ export default function DashboardPage() {
         <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">
-              Credit History
+              {t("dashboard.creditHistory")}
             </h2>
             <span className="text-xs text-zinc-600">
-              {creditLogs.length} entries
+              {t("dashboard.entries", { count: creditLogs.length })}
             </span>
           </div>
           {creditLogs.length === 0 ? (
             <div className="px-5 py-10 text-center">
-              <p className="text-sm text-zinc-500">No credit activity yet</p>
+              <p className="text-sm text-zinc-500">{t("dashboard.noCreditActivity")}</p>
             </div>
           ) : (
             <div className="divide-y divide-zinc-800/50">
@@ -429,7 +433,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <span className="text-xs text-zinc-600 font-mono">
-                        bal: {log.balance}
+                        {t("dashboard.balance", { balance: log.balance })}
                       </span>
                       <span className="text-xs text-zinc-600 whitespace-nowrap">
                         {formatDate(log.created_at)}
