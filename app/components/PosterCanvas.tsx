@@ -36,6 +36,13 @@ function parseGradientAngle(bg: string): number {
 export default function PosterCanvas({ width, height, background, elements, onCanvasReady }: Props) {
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
+  const initDone = useRef(false);
+
+  // Scale to fit preview
+  const maxW = 800;
+  const scale = width > maxW ? maxW / width : 1;
+  const displayW = Math.round(width * scale);
+  const displayH = Math.round(height * scale);
 
   useEffect(() => {
     // Load Google Fonts
@@ -48,13 +55,20 @@ export default function PosterCanvas({ width, height, background, elements, onCa
   }, []);
 
   useEffect(() => {
-    if (!canvasElRef.current) return;
+    if (!canvasElRef.current || initDone.current) return;
+    initDone.current = true;
 
+    // fabric.js v7 defaults to originX/Y "center" — override to "left"/"top"
+    fabric.FabricObject.ownDefaults.originX = "left";
+    fabric.FabricObject.ownDefaults.originY = "top";
+
+    // Create canvas at display size, use zoom to map logical coords
     const canvas = new fabric.Canvas(canvasElRef.current, {
-      width,
-      height,
+      width: displayW,
+      height: displayH,
       selection: true,
     });
+    canvas.setZoom(scale);
     fabricRef.current = canvas;
 
     const init = async () => {
@@ -172,32 +186,14 @@ export default function PosterCanvas({ width, height, background, elements, onCa
     return () => {
       canvas.dispose();
       fabricRef.current = null;
+      initDone.current = false;
     };
-  }, [width, height, background, elements, onCanvasReady]);
-
-  // Scale to fit preview
-  const maxW = 800;
-  const scale = width > maxW ? maxW / width : 1;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width, height, background, elements]);
 
   return (
-    <div
-      style={{
-        width: width * scale,
-        height: height * scale,
-        overflow: "hidden",
-        borderRadius: 8,
-      }}
-    >
-      <div
-        style={{
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          width,
-          height,
-        }}
-      >
-        <canvas ref={canvasElRef} />
-      </div>
+    <div style={{ borderRadius: 8, overflow: "hidden", display: "inline-block" }}>
+      <canvas ref={canvasElRef} />
     </div>
   );
 }

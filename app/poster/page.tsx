@@ -72,7 +72,16 @@ export default function PosterPage() {
 
   const downloadPng = () => {
     if (!canvasInstance) return;
+    // Export at full resolution (undo the preview zoom)
+    const currentZoom = canvasInstance.getZoom();
+    canvasInstance.setZoom(1);
+    canvasInstance.setDimensions({ width: posterWidth, height: posterHeight });
     const dataUrl = canvasInstance.toDataURL({ format: "png", multiplier: 2 } as never);
+    canvasInstance.setZoom(currentZoom);
+    canvasInstance.setDimensions({
+      width: Math.round(posterWidth * currentZoom),
+      height: Math.round(posterHeight * currentZoom),
+    });
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `${posterTitle || "poster"}.png`;
