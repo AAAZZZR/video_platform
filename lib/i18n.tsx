@@ -29,12 +29,23 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-// Cache loaded messages
+// Static import map — bundler needs explicit paths
+const loaders: Record<Locale, () => Promise<{ default: Messages }>> = {
+  en: () => import("@/messages/en.json"),
+  "zh-TW": () => import("@/messages/zh-TW.json"),
+  "zh-CN": () => import("@/messages/zh-CN.json"),
+  ja: () => import("@/messages/ja.json"),
+  ko: () => import("@/messages/ko.json"),
+  ar: () => import("@/messages/ar.json"),
+  es: () => import("@/messages/es.json"),
+  fr: () => import("@/messages/fr.json"),
+};
+
 const cache: Partial<Record<Locale, Messages>> = {};
 
 async function loadMessages(locale: Locale): Promise<Messages> {
   if (cache[locale]) return cache[locale]!;
-  const mod = await import(`@/messages/${locale}.json`);
+  const mod = await loaders[locale]();
   cache[locale] = mod.default;
   return mod.default;
 }
